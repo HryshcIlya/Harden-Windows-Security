@@ -1,0 +1,42 @@
+name: Download Translations from Crowdin
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  download-translations:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          download_translations: true
+          export_only_approved: true
+          skip_untranslated_strings: false
+          skip_untranslated_files: false
+          push_translations: true
+          create_pull_request: true
+          localization_branch_name: crowdin
+          pull_request_base_branch_name: main
+          pull_request_title: "chore(i18n): Crowdin translations"
+          pull_request_body: "Translations from Crowdin"
+          commit_message: "chore(i18n): Update translations"
+          github_user_name: "github-actions[bot]"
+          github_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
